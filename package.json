@@ -39,8 +39,9 @@
     ]
   },
   "devDependencies": {
-    "gh-pages": "^6.3.0",
-    "tailwindcss": "^4.1.7"
+
+    "gh-pages": "^6.3.0"
+
   },
   "homepage": "https://han-chanhee.github.io/t-prep-test/"
 }
