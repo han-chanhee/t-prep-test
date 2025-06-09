@@ -1,4 +1,4 @@
-// src/GenerateMaterialPage.js
+//src/GenerateMaterialPage.js
 import React from "react";
 
 function GenerateMaterialPage({
@@ -7,10 +7,26 @@ function GenerateMaterialPage({
   otherMaterialButtons,
   onMaterialAdded,
   onContinue,
+  onGoToStorytelling, // 추가
 }) {
   return (
     <div>
       <h2>수업 자료 생성: {selectedKeyword}</h2>
+      <h3>스토리텔링 만들러 가기</h3>
+      <button
+        style={{
+          margin: "5px",
+          padding: "8px 12px",
+          backgroundColor: "#ff9800",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+        }}
+        onClick={onGoToStorytelling}
+      >
+        Go
+      </button>
 
       <h3>추천 수업 자료</h3>
       <div
@@ -31,7 +47,7 @@ function GenerateMaterialPage({
               minWidth: "200px",
             }}
           >
-            {material} {/* 미리 만들어진 수업 자료 내용 */}
+            {material}
             <button
               style={{
                 marginTop: "10px",
@@ -71,7 +87,6 @@ function GenerateMaterialPage({
               cursor: "pointer",
             }}
             onClick={() => {
-              // 해당 버튼에 대한 수업 자료 생성 로직 (API 호출 등)
               const generated = `[생성됨] ${selectedKeyword} - ${buttonLabel}`;
               onMaterialAdded(selectedKeyword, generated);
               alert(
