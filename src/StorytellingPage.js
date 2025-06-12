@@ -36,6 +36,13 @@ function StorytellingPage({
     event: "",
     conclusion: "",
   });
+  // 대사 상태 추가
+  const [dialogue, setDialogue] = useState({
+    background: "",
+    development: "",
+    event: "",
+    conclusion: "",
+  });
   const [imagePrompts, setImagePrompts] = useState({
     background: "",
     development: "",
@@ -61,6 +68,13 @@ function StorytellingPage({
         event: `갑작스럽게 ${selectedKeyword}와 관련된 큰 사건이 발생했다!`,
         conclusion: `${character.name}는 문제를 해결하고 ${selectedKeyword}의 가치를 깨달았다.`,
       });
+      // 초기 대사 생성
+      setDialogue({
+        background: `${character.name}: "여기가 바로 그 ${selectedKeyword} 마을이구나!"`,
+        development: `친구: "${selectedKeyword}에 대한 비밀을 알려줄게."\n${character.name}: "정말? 귀가 솔깃한데."`,
+        event: `${character.name}: "이럴 수가! 마을이 위험해!"`,
+        conclusion: `${character.name}: "우리가 함께 ${selectedKeyword}를 지켜냈어!"`,
+      });
       setImagePrompts({
         background: `Illustration of ${character.name} in a ${selectedKeyword} village, vibrant and adventurous`,
         development: `Illustration of ${character.name} meeting a friend in a ${selectedKeyword} setting`,
@@ -77,7 +91,9 @@ function StorytellingPage({
     setTimeout(() => {
       setImageUrls((prev) => ({
         ...prev,
-        [section]: `https://source.unsplash.com/random/800x600/?${section}`,
+        [section]: `https://source.unsplash.com/random/800x600/?${
+          imagePrompts[section] || section
+        }`,
       }));
       setIsLoading(false);
       if (
@@ -92,10 +108,18 @@ function StorytellingPage({
     setIsLoading(true);
     setTimeout(() => {
       setImageUrls({
-        background: `https://source.unsplash.com/random/800x600/?background`,
-        development: `https://source.unsplash.com/random/800x600/?development`,
-        event: `https://source.unsplash.com/random/800x600/?event`,
-        conclusion: `https://source.unsplash.com/random/800x600/?conclusion`,
+        background: `https://source.unsplash.com/random/800x600/?${
+          imagePrompts.background || "background"
+        }`,
+        development: `https://source.unsplash.com/random/800x600/?${
+          imagePrompts.development || "development"
+        }`,
+        event: `https://source.unsplash.com/random/800x600/?${
+          imagePrompts.event || "event"
+        }`,
+        conclusion: `https://source.unsplash.com/random/800x600/?${
+          imagePrompts.conclusion || "conclusion"
+        }`,
       });
       setStep("review");
       setIsLoading(false);
@@ -104,6 +128,11 @@ function StorytellingPage({
 
   const handleScriptChange = (field, value) => {
     setScript((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // 대사 변경 핸들러 추가
+  const handleDialogueChange = (field, value) => {
+    setDialogue((prev) => ({ ...prev, [field]: value }));
   };
 
   const handlePromptChange = (field, value) => {
@@ -116,6 +145,7 @@ function StorytellingPage({
       material: JSON.stringify({
         character: selectedCharacter,
         script,
+        dialogue, // 저장할 데이터에 대사 추가
         imageUrls,
       }),
     };
@@ -247,10 +277,25 @@ function StorytellingPage({
               marginBottom: "0.5rem",
             }}
           >
-            스크립트 수정
+            스크립트 및 대사 수정
           </h2>
           {["background", "development", "event", "conclusion"].map((field) => (
-            <div key={field} style={{ marginBottom: "1rem" }}>
+            <div
+              key={field}
+              style={{
+                marginBottom: "1.5rem",
+                border: "1px solid #eee",
+                padding: "1rem",
+                borderRadius: "0.5rem",
+              }}
+            >
+              <h3 style={{ fontWeight: "bold", marginBottom: "1rem" }}>
+                {field === "background" && "배경"}
+                {field === "development" && "전개"}
+                {field === "event" && "사건"}
+                {field === "conclusion" && "결말"}
+              </h3>
+              {/* 스크립트 입력 */}
               <label
                 style={{
                   display: "block",
@@ -258,10 +303,7 @@ function StorytellingPage({
                   marginBottom: "0.25rem",
                 }}
               >
-                {field === "background" && "배경"}
-                {field === "development" && "전개"}
-                {field === "event" && "사건"}
-                {field === "conclusion" && "결말"}
+                스크립트
               </label>
               <textarea
                 value={script[field]}
@@ -274,9 +316,36 @@ function StorytellingPage({
                   outline: "none",
                   resize: "vertical",
                   fontSize: "0.875rem",
+                  marginBottom: "1rem",
                 }}
                 rows="4"
-                placeholder={`${field} 입력...`}
+                placeholder={`${field} 스크립트 입력...`}
+              />
+
+              {/* 대사 입력 */}
+              <label
+                style={{
+                  display: "block",
+                  fontWeight: "500",
+                  marginBottom: "0.25rem",
+                }}
+              >
+                대사
+              </label>
+              <textarea
+                value={dialogue[field]}
+                onChange={(e) => handleDialogueChange(field, e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "0.5rem",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "0.5rem",
+                  outline: "none",
+                  resize: "vertical",
+                  fontSize: "0.875rem",
+                }}
+                rows="4"
+                placeholder={`${field} 대사 입력...`}
               />
             </div>
           ))}
@@ -297,7 +366,6 @@ function StorytellingPage({
         </div>
       )}
 
-      {/* 단계 3: 삽화 생성 및 프롬프트 수정 */}
       {step === "generateImage" && (
         <div>
           <h2
@@ -381,7 +449,6 @@ function StorytellingPage({
         </div>
       )}
 
-      {/* 단계 4: 최종 확인 */}
       {step === "review" && (
         <div>
           <h2
@@ -394,7 +461,7 @@ function StorytellingPage({
             최종 스토리텔링 확인
           </h2>
           <div style={{ marginBottom: "1rem" }}>
-            <h3 style={{ fontWeight: "500" }}>스크립트</h3>
+            <h3 style={{ fontWeight: "500" }}>스크립트 및 대사</h3>
             <div
               style={{
                 border: "1px solid #d1d5db",
@@ -406,14 +473,56 @@ function StorytellingPage({
               <p>
                 <strong>배경:</strong> {script.background}
               </p>
+              <p
+                style={{
+                  color: "#3b82f6",
+                  whiteSpace: "pre-wrap",
+                  marginTop: "0.5rem",
+                  marginBottom: "1rem",
+                }}
+              >
+                <strong>대사:</strong> {dialogue.background}
+              </p>
+
               <p>
                 <strong>전개:</strong> {script.development}
               </p>
+              <p
+                style={{
+                  color: "#3b82f6",
+                  whiteSpace: "pre-wrap",
+                  marginTop: "0.5rem",
+                  marginBottom: "1rem",
+                }}
+              >
+                <strong>대사:</strong> {dialogue.development}
+              </p>
+
               <p>
                 <strong>사건:</strong> {script.event}
               </p>
+              <p
+                style={{
+                  color: "#3b82f6",
+                  whiteSpace: "pre-wrap",
+                  marginTop: "0.5rem",
+                  marginBottom: "1rem",
+                }}
+              >
+                <strong>대사:</strong> {dialogue.event}
+              </p>
+
               <p>
                 <strong>결말:</strong> {script.conclusion}
+              </p>
+              <p
+                style={{
+                  color: "#3b82f6",
+                  whiteSpace: "pre-wrap",
+                  marginTop: "0.5rem",
+                }}
+              >
+                <strong>대사:</strong> {dialogue.conclusion}
               </p>
             </div>
           </div>
@@ -481,7 +590,7 @@ function StorytellingPage({
               }}
               onClick={() => setStep("editScript")}
             >
-              스크립트 수정
+              스크립트/대사 수정
             </button>
             <button
               style={{
@@ -500,7 +609,6 @@ function StorytellingPage({
         </div>
       )}
 
-      {/* 뒤로 가기 버튼 */}
       <button
         style={{
           marginTop: "1rem",
@@ -516,6 +624,19 @@ function StorytellingPage({
         자료 생성 페이지로 돌아가기
       </button>
     </div>
+  );
+}
+
+// Dummy App component for demonstration
+function App() {
+  return (
+    <StorytellingPage
+      selectedKeyword="마법의 숲"
+      onMaterialAdded={(keyword, material) =>
+        console.log("Saved:", { keyword, material })
+      }
+      onBack={() => console.log("Back to previous page")}
+    />
   );
 }
 
